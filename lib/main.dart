@@ -62,7 +62,12 @@ class _HomePageState extends State<HomePage>{
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  buildButton("Generate", (){}),
+                  //This Element here generates the randomly generated Number on the Generate Page (Has a limit of 1 - 9)
+                  buildButton("Generate", (){
+                    setState(() {
+                      _generatedNumber = Random().nextInt(9) + 1;
+                    });
+                  }),
                   SizedBox(height: 10),
                   buildButton("View Statistics", () {}),
                 ],
@@ -76,6 +81,7 @@ class _HomePageState extends State<HomePage>{
   }
 }
 
+//Provides Widget for the the Generate Button, and the Change page to stats button
 Widget buildButton (String text, VoidCallback onPressed){
   return ElevatedButton(
     style: ElevatedButton.styleFrom(
