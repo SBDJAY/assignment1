@@ -69,6 +69,7 @@ void initState() {
       _animationController.stop();
       _animationController.value = 1.0;
 
+
       setState(() {
         _isSpinning = false;
       });
@@ -100,6 +101,8 @@ void initState() {
           mainAxisAlignment: .center,
           children: [
             Expanded(child: Center(
+              child: RotationTransition(
+                turns: _rotationAnimation,
               child: Text(
                 _generatedNumber?.toString() ??"",
                 //Element Space to show generated number 
@@ -107,6 +110,7 @@ void initState() {
               ),
             ),
           ), 
+        ),
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.only(left: 10.0, right: 10.0, bottom: 20.0),
