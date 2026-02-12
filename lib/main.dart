@@ -1,3 +1,16 @@
+//Daniel Pius
+//991675608
+
+//Instances of CHAT GPT USED
+//https://chatgpt.com/share/698d5fb3-2bfc-800c-8f5b-ee6205c3c144
+//fix Very quick spin speed
+//Fix for Reset button not wiping reset page immediatly (only after the hopepage was accesseed again)
+
+//Other Sources Used:
+// https://docs.flutter.dev/cookbook/navigation/returning-data
+// https://docs.flutter.dev/data-and-backend/state-mgmt
+// https://api.flutter.dev/flutter/animation/AnimationController-class.html
+// https://api.flutter.dev/flutter/widgets/Navigator-class.html
 //needed for asynchronus 
 import 'dart:async';
 import 'dart:math';
@@ -17,7 +30,7 @@ class MyApp extends StatelessWidget {
       title: 'Random Number Generator',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: .fromSeed(seedColor: Colors.lightBlueAccent),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlueAccent),
         useMaterial3: true,
       ),
       home: HomePage(),
@@ -63,7 +76,7 @@ void initState() {
     _animationController.forward();
 
     _timer?.cancel();
-    _timer = Timer.periodic(Duration(microseconds: 100), (timer){
+    _timer = Timer.periodic(Duration(milliseconds: 80), (timer){
       setState(() => _generatedNumber = _random.nextInt(9)+1);
     });
 
@@ -157,10 +170,23 @@ void initState() {
 
 
 //UI Page for the Stats Page that saves the spinned nuber data 
-class StatisticsPage extends StatelessWidget {
+class StatisticsPage extends StatefulWidget {
   final Map<int, int> statistics;
   final VoidCallback onReset;
-  StatisticsPage({required this.statistics, required this.onReset});
+  const StatisticsPage({super.key, required this.statistics, required this.onReset});
+
+  @override
+  State<StatisticsPage> createState() => _StatisticsPageState();
+}
+
+class _StatisticsPageState extends State<StatisticsPage> {
+  void _resetStats() {
+    setState(() {
+      widget.statistics.clear();
+    });
+
+        widget.onReset();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -186,7 +212,7 @@ class StatisticsPage extends StatelessWidget {
                   itemBuilder: (context, index){
                     int number = index + 1;
                     return ListTile(
-                      title: Text("$number: ${statistics[number] ?? 0}",
+                      title: Text("$number: ${widget.statistics[number] ?? 0}",
                         style: TextStyle(color: Colors.white, fontSize: 20)),
                       );
                     }, 
@@ -194,8 +220,10 @@ class StatisticsPage extends StatelessWidget {
                 ),
 
                 buildButton("Reset", () {
-                  statistics.clear();
-                  onReset();
+                  setState(() {
+                    widget.statistics.clear();
+                });
+                widget.onReset();
                 }),
                 SizedBox(height: 10),
                 buildButton("Back to Home", () => Navigator.pop(context)),
