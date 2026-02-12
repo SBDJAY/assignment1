@@ -38,6 +38,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   late Animation<double> _rotationAnimation;
   bool _isSpinning = false;
   int _currentSpinId = 0;
+  final Map<int, int> _statistics = {};
+  int? _lastGeneratedNumber;
+
+
 
   @override
 void initState() {
@@ -68,9 +72,10 @@ void initState() {
       _timer?.cancel();
       _animationController.stop();
       _animationController.value = 1.0;
-
+      _lastGeneratedNumber = _generatedNumber;
 
       setState(() {
+        _statistics[_lastGeneratedNumber!] = (_statistics[_lastGeneratedNumber!] ?? 0) + 1;
         _isSpinning = false;
       });
     });
@@ -89,24 +94,28 @@ void initState() {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        //App Bar Color and Font Color
-        backgroundColor: Colors.blue.shade600,
-        title: Text("Random Number Generator",style: TextStyle(color: Colors.white)),
-        //Top Right Home Button
-        leading: Icon(Icons.home_outlined, color: Colors.white,),
+        backgroundColor: Color(0xFF147CD3),
+        title: Text("Random Number Generator", style: TextStyle(color: Colors.white)),
+        leading: IconButton(
+          icon: Icon(Icons.home_outlined, color: Colors.white),
+          onPressed: () {
+            print("Home button clicked");
+          },
+        ),
       ),
+ 
       backgroundColor: Colors.lightBlue,
       body: Center(
         child: Column(
-          mainAxisAlignment: .center,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Expanded(child: Center(
               child: RotationTransition(
                 turns: _rotationAnimation,
               child: Text(
-                _generatedNumber?.toString() ??"",
+                _generatedNumber?.toString() ?? "",
                 //Element Space to show generated number 
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 64, color: Colors.white, fontWeight: FontWeight.bold),
               ),
             ),
           ), 
@@ -119,22 +128,88 @@ void initState() {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   //This Element here generates the randomly generated Number on the Generate Page (Has a limit of 1 - 9)
-                  _buildButton("Generate", _generateNumber),
+                  buildButton("Generate", _generateNumber),
                   SizedBox(height: 10),
-                  _buildButton("View Statistics", () {}),
+                  buildButton("View Statistics", () => Navigator.push(
+                    context, MaterialPageRoute(
+                      builder: (context) => StatisticsPage(
+                        statistics: _statistics, 
+                        onReset: (){
+                          setState(() {
+                            _statistics.clear();
+                            _generatedNumber = null;
+                          });
+                        },
+                      ),
+                    ),
+                  )),
                 ],
               ),
             ),
-          ),      
+          ),
         ],
-       ),
+      ),
       ),
     );
   }
 }
 
+
+
+//UI Page for the Stats Page that saves the spinned nuber data 
+class StatisticsPage extends StatelessWidget {
+  final Map<int, int> statistics;
+  final VoidCallback onReset;
+  StatisticsPage({required this.statistics, required this.onReset});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.blue.shade600,
+        title: Text("Statistics", style: TextStyle(color : Colors.white)),
+        leading : IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        backgroundColor: Colors.lightBlue,
+        body: SafeArea(child: Padding
+          (padding: const EdgeInsets.symmetric(
+            horizontal: 10.0, vertical: 20.0
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(child: ListView.builder(
+                  itemCount: 9,
+                  itemBuilder: (context, index){
+                    int number = index + 1;
+                    return ListTile(
+                      title: Text("$number: ${statistics[number] ?? 0}",
+                        style: TextStyle(color: Colors.white, fontSize: 20)),
+                      );
+                    }, 
+                  ),
+                ),
+
+                buildButton("Reset", () {
+                  statistics.clear();
+                  onReset();
+                }),
+                SizedBox(height: 10),
+                buildButton("Back to Home", () => Navigator.pop(context)),
+              ],
+            ),
+          ),
+        ),
+    );
+  }
+}
+
+
 //Provides Widget for the the Generate Button, and the Change page to stats button
-Widget _buildButton (String text, VoidCallback onPressed){
+Widget buildButton (String text, VoidCallback onPressed){
   return ElevatedButton(
     style: ElevatedButton.styleFrom(
       backgroundColor: Colors.blue.shade600,
@@ -144,5 +219,5 @@ Widget _buildButton (String text, VoidCallback onPressed){
     ),
     onPressed: onPressed,
     child: Text(text, style: TextStyle(fontSize: 20)),    
-    );
+  );
 }
